@@ -1,171 +1,164 @@
-# SPARTA — Superhuman PRAgmatic Technology Accelerator
+# SPARTA - Hardware Design and Optimization Platform
 
-**An AI-native hardware design and optimization platform with integrated circuit emulation, RTL generation, and multi-objective optimization.**
+SPARTA is an AI-native platform that accelerates hardware design through intelligent hardware specification synthesis, RTL generation, and interactive circuit visualization with a conversational interface.
 
-## 🎯 Project Vision
+## Overview
 
-SPARTA is a comprehensive platform that accelerates hardware design by combining:
-- AI-driven hardware specification synthesis
-- Multi-paradigm compiler infrastructure
-- RTL generation and optimization
-- Cycle-accurate circuit emulation
-- Multi-objective design space exploration
+SPARTA combines automated hardware description generation with an intuitive chat-based interface to help engineers and developers quickly design, simulate, and optimize digital circuits. The platform generates production-ready RTL code, produces circuit schematics and breadboard diagrams, and provides comprehensive design documentation.
 
-## 🏗️ Architecture Overview
+## Key Features
+
+- Conversational Chat Interface: Natural language hardware design specifications
+- RTL Code Generation: Automatic Verilog/SystemVerilog code synthesis
+- Circuit Visualization: Breadboard diagrams with component-specific wiring and bill of materials
+- Hardware Support: Adders, ALUs, counters, registers, UARTs, multiplexers, flip-flops
+- Design Export: Download RTL, testbenches, reports, PCB layouts, and Gerber files
+- Multi-Agent Architecture: Specialized agents for planning, synthesis, RTL generation, and simulation
+- Session Memory: Design context persistence across chat interactions
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + TypeScript)             │
-│              Chat UI, Design Canvas, Visualization           │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│                 API Gateway (FastAPI)                        │
-│          Authentication, Rate Limiting, Routing              │
-└─────────────────────┬───────────────────────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────────┐
-│              AI Orchestrator (Python)                        │
-│     Task Decomposition, Agent Coordination, Workflow Mgmt    │
-└─────┬───────┬───────┬───────┬───────┬───────┬──────────────┘
-      │       │       │       │       │       │
-      ▼       ▼       ▼       ▼       ▼       ▼
-   ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐
-   │NLP │ │RTL │ │Opt │ │Emu │ │Syn │ │Viz │  Specialized Agents
-   │Agt │ │Gen │ │Agt │ │Svc │ │Agt │ │Agt │
-   └────┘ └────┘ └────┘ └────┘ └────┘ └────┘
+Frontend (Streamlit)
+        |
+        v
+API Gateway (FastAPI - Port 9000)
+        |
+        +-------> Chat Endpoint
+        |
+        +-------> Image Generation Endpoint
+        |
+        v
+Backend Agents
+    - Planning Agent (task breakdown)
+    - Synthesis Agent (architecture generation)
+    - RTL Agent (Verilog/SystemVerilog)
+    - Image Agent (breadboard diagrams)
+    - Emulation Agent (simulation/verification)
+    |
+    v
+SQLite Database (session memory, chat history)
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 TestProject/
-├── frontend/              # React TypeScript UI
-├── gateway/               # FastAPI gateway service
-├── orchestrator/          # AI orchestrator service
-├── agents/
-│   ├── nlp-agent/        # Natural language processing
-│   ├── synthesis-agent/  # Hardware specification synthesis
-│   ├── optimization-agent/ # Multi-objective optimization
-│   └── visualization-agent/ # Data visualization
-├── services/
-│   ├── emulator/         # Cycle-accurate emulation
-│   ├── rtl-generator/    # RTL code generation
-│   ├── compiler/         # Multi-paradigm compiler
-│   └── model-synthesis/  # Hardware model synthesis
-├── shared/
-│   ├── schemas/          # Shared data schemas
-│   ├── utils/            # Shared utilities
-│   └── proto/            # Protocol buffers (if needed)
-├── infrastructure/
-│   ├── docker/           # Dockerfiles
-│   ├── kubernetes/       # K8s manifests
-│   └── terraform/        # IaC configs
-├── tests/                # Integration tests
-└── docs/                 # Documentation
+├── docs/                           # Documentation
+├── sparta-chat/
+│   ├── backend/                    # FastAPI backend server
+│   │   ├── agents/                 # Multi-agent system
+│   │   │   ├── image_agent.py      # Breadboard diagram generation
+│   │   │   ├── planning_agent.py   # Task decomposition
+│   │   │   ├── synthesis_agent.py  # Architecture synthesis
+│   │   │   ├── rtl_agent.py        # RTL/Verilog generation
+│   │   │   ├── nlp_agent.py        # Natural language parsing
+│   │   │   └── emulation_agent.py  # Simulation and verification
+│   │   ├── downloads.py            # Artifact export endpoints
+│   │   ├── main.py                 # FastAPI orchestrator
+│   │   ├── database.py             # SQLite interface
+│   │   └── requirements.txt
+│   ├── frontend/
+│   │   └── app.py                  # Streamlit chat UI
+│   └── static/                     # Generated diagrams and images
+└── [service modules and other infrastructure]
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
-
-**Required**:
-- **Docker Desktop 4.0+** - [Download here](https://www.docker.com/products/docker-desktop)
-  - ⚠️ **Not installed?** See **[INSTALL_DOCKER.md](INSTALL_DOCKER.md)** for setup help
-
-**Optional** (for running tests):
-- PowerShell (Windows) or Bash (Linux/Mac)
-- Python 3.11+
-
-### Windows - Quick Start
-
-```powershell
-# Start all services (auto-detects Docker Desktop)
-.\scripts\start.ps1
-
-# Access points:
-#   Frontend:     http://localhost:3000
-#   API Gateway:  http://localhost:8000
-#   API Docs:     http://localhost:8000/docs
-
-# View logs
-docker compose logs -f
-
-# Run integration tests
-pip install -r tests\requirements.txt
-pytest tests\test_integration.py -v
-```
-
-**📖 First time user?** See **[QUICK_START.md](QUICK_START.md)** for detailed setup instructions.
-
-**⚠️ Having issues?** See **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** for solutions to common problems.
-
-### Linux/Mac - Quick Start
+### Option 1: Docker Compose (Recommended)
 
 ```bash
-# Start all services
-docker compose up -d
+git clone <repository-url>
+cd TestProject
+docker-compose up -d
 
-# Check health
-curl http://localhost:8000/health
-
-# Run tests
-pip install -r tests/requirements.txt
-pytest tests/test_integration.py -v
+# Access the application:
+# Frontend: http://localhost:8501
+# Backend API: http://localhost:9000
+# API Docs: http://localhost:9000/docs
 ```
 
-### Individual Service Development
-
-See service-specific READMEs:
-- [Frontend](./frontend/README.md)
-- [Gateway](./gateway/README.md)
-- [Orchestrator](./orchestrator/README.md)
-- [Emulator](./services/emulator/README.md)
-
-## 🧪 Testing
+### Option 2: Local Python Installation
 
 ```bash
-# Run all tests
-./scripts/test-all.sh
+cd TestProject/sparta-chat
 
-# Run specific service tests
-cd services/emulator && pytest
-cd agents/nlp-agent && pytest
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the backend (Terminal 1)
+cd backend
+python main.py
+
+# Start the frontend (Terminal 2)
+cd ../frontend
+streamlit run app.py
 ```
 
-## 📚 Documentation
+For detailed setup instructions, see [docs/QUICK_START.md](docs/QUICK_START.md)
 
-- [Architecture Guide](./docs/architecture.md)
-- [API Reference](./docs/api-reference.md)
-- [Development Guide](./docs/development.md)
-- [Deployment Guide](./docs/deployment.md)
+## Usage Examples
 
-## 🛠️ Technology Stack
+### Generate an Adder Circuit
 
-**Frontend:**
-- React 18 + TypeScript
-- TanStack Query (data fetching)
-- Zustand (state management)
-- TailwindCSS (styling)
-- Recharts (visualization)
+```
+User: "Create a 4-bit ripple-carry adder with inputs A and B"
 
-**Backend:**
-- FastAPI (gateway & services)
-- LangChain (AI orchestration)
-- PostgreSQL (data persistence)
-- Redis (caching)
-- RabbitMQ (message queue)
+System Response:
+- Generates architecture specification
+- Creates Verilog RTL code
+- Produces breadboard diagram with:
+  * Arduino/MCU connections
+  * 74LS83 4-bit adder IC with labeled pins
+  * Input/output signal routing
+  * Bill of materials
+```
 
-**Infrastructure:**
-- Docker & Docker Compose
-- Kubernetes
-- Terraform
-- GitHub Actions (CI/CD)
+### Request a Custom ALU
 
-## 📄 License
+```
+User: "Design an 8-bit ALU with A, B inputs and 3-bit function select"
 
-MIT License - see [LICENSE](./LICENSE) file
+System Response:
+- Synthesizes ALU architecture
+- Generates SystemVerilog implementation
+- Creates circuit diagram with 74LS181 ALU IC pinout
+- Produces PCB and Gerber files
+```
 
-## 🤝 Contributing
+## Supported Hardware Components
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
+Adders, ALUs, counters, registers, UARTs, multiplexers, flip-flops with accurate pinouts, wiring, and bill of materials.
+
+## Documentation
+
+- [Quick Start Guide](docs/QUICK_START.md) - Get running in 5 minutes
+- [Architecture Guide](docs/architecture.md) - System design details
+- [API Reference](docs/api-reference.md) - Complete endpoint documentation
+- [Image Generation Guide](docs/IMAGE_GENERATION_GUIDE.md) - Diagram generation
+- [Deployment Guide](docs/deployment.md) - Production setup
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+
+## System Requirements
+
+- Python 3.9+
+- 4GB RAM minimum
+- 2GB disk space
+- Modern web browser
+
+## Technology Stack
+
+- Backend: FastAPI, Python
+- Frontend: Streamlit
+- Diagrams: Matplotlib
+- Database: SQLite
+- Container: Docker & Docker Compose
+
+## License
+
+MIT License - see LICENSE file
+
+## Contributing
+
+Contributions welcome. See docs/development.md for guidelines.
