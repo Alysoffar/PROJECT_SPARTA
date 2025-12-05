@@ -1,0 +1,17 @@
+diff --git a/node_modules/ajv-formats/dist/limit.js b/node_modules/ajv-formats/dist/limit.js
+index 5a0b3c7..0000000 100644
+--- a/node_modules/ajv-formats/dist/limit.js
++++ b/node_modules/ajv-formats/dist/limit.js
+@@ -1,9 +1,9 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.formatLimitDefinition = void 0;
+-const context_1 = require("ajv/dist/compile/context");
+-const codegen_1 = require("ajv/dist/compile/codegen");
++// Patched: ajv v8 no longer exposes 'compile/context' as a module path
++const context_1 = require("ajv/dist/compile/index.js");
++const codegen_1 = require("ajv/dist/compile/codegen/index.js");
+ const ops = codegen_1.operators;
+ const KWDs = {
+     formatMaximum: { okStr: "<=", ok: ops.LTE, fail: ops.GT },
+*** End Patch

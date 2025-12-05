@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPARTA Result</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Workflow Result</h1>
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% else %}
+      <div class="row"><span class="label">Workflow ID:</span> <code>{{ workflow_id }}</code></div>
+      <div class="row"><span class="label">Status:</span> {{ status }}</div>
+      <div class="row"><span class="label">Progress:</span> {{ progress }}%</div>
+      <div class="row"><span class="label">Stages Completed:</span> {{ stages | join(", ") }}</div>
+        {% if result %}
+          <h2>Workflow Results</h2>
+          <div class="row"><span class="label">Execution Time:</span> {{ result.execution_time_ms }} ms</div>
+          <div class="row"><span class="label">Completed At:</span> {{ result.completed_at }}</div>
+          
+          {% if result.results %}
+            {% for stage, data in result.results.items() %}
+              <h3>{{ stage | title }} Output</h3>
+              <pre class="raw">{{ data | tojson(indent=2) }}</pre>
+            {% endfor %}
+          {% endif %}
+          
+          {% if result.artifacts %}
+            <h3>Artifacts</h3>
+            <ul>
+              {% for artifact in result.artifacts %}
+                <li><code>{{ artifact }}</code></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          
+          {% if result.errors %}
+            <h3>Errors</h3>
+            <div class="error">
+              <ul>
+                {% for error in result.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          
+          <h3>Full Result JSON</h3>
+          <pre class="raw">{{ result | tojson(indent=2) }}</pre>
+        {% else %}
+          <div class="row">No result payload available; showing status only.</div>
+        {% endif %}
+        <pre class="raw">{{ raw | tojson(indent=2) }}</pre>
+    {% endif %}
+    <a class="back" href="/">Back</a>
+  </div>
+</body>
+</html>

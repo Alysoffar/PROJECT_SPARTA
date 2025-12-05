@@ -1,0 +1,214 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sparta-postgres
+    environment:
+      POSTGRES_DB: sparta
+      POSTGRES_USER: sparta
+      POSTGRES_PASSWORD: sparta_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sparta"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: sparta-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sparta-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: sparta
+      RABBITMQ_DEFAULT_PASS: sparta_dev_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: sparta-gateway
+    environment:
+      DATABASE_URL: postgresql://sparta:sparta_dev_password@postgres:5432/sparta
+      REDIS_URL: redis://redis:6379
+      ORCHESTRATOR_URL: http://orchestrator:8001
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      orchestrator:
+        condition: service_started
+    volumes:
+      - ./gateway:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # AI Orchestrator
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: sparta-orchestrator
+    environment:
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://sparta:sparta_dev_password@rabbitmq:5672/
+      NLP_AGENT_URL: http://nlp-agent:8010
+      SYNTHESIS_AGENT_URL: http://synthesis-agent:8011
+      OPTIMIZATION_AGENT_URL: http://optimization-agent:8012
+      VISUALIZATION_AGENT_URL: http://visualization-agent:8013
+      EMULATOR_URL: http://emulator:8020
+      RTL_GENERATOR_URL: http://rtl-generator:8021
+      MODEL_SYNTHESIS_URL: http://model-synthesis:8022
+      COMPILER_URL: http://compiler:8023
+      PYTHONPATH: /app:/app/shared
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./orchestrator:/app
+      - ./shared:/app/shared
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+  # NLP Agent
+  nlp-agent:
+    build:
+      context: ./agents/nlp-agent
+      dockerfile: Dockerfile
+    container_name: sparta-nlp-agent
+    ports:
+      - "8010:8010"
+    volumes:
+      - ./agents/nlp-agent:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload
+
+  # Synthesis Agent
+  synthesis-agent:
+    build:
+      context: ./agents/synthesis-agent
+      dockerfile: Dockerfile
+    container_name: sparta-synthesis-agent
+    ports:
+      - "8011:8011"
+    volumes:
+      - ./agents/synthesis-agent:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8011 --reload
+
+  # Optimization Agent
+  optimization-agent:
+    build:
+      context: ./agents/optimization-agent
+      dockerfile: Dockerfile
+    container_name: sparta-optimization-agent
+    ports:
+      - "8012:8012"
+    volumes:
+      - ./agents/optimization-agent:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8012 --reload
+
+  # Visualization Agent
+  visualization-agent:
+    build:
+      context: ./agents/visualization-agent
+      dockerfile: Dockerfile
+    container_name: sparta-visualization-agent
+    ports:
+      - "8013:8013"
+    volumes:
+      - ./agents/visualization-agent:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8013 --reload
+
+  # Emulator Service
+  emulator:
+    build:
+      context: ./services/emulator
+      dockerfile: Dockerfile
+    container_name: sparta-emulator
+    ports:
+      - "8020:8020"
+    volumes:
+      - ./services/emulator:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8020 --reload
+
+  # RTL Generator Service
+  rtl-generator:
+    build:
+      context: ./services/rtl-generator
+      dockerfile: Dockerfile
+    container_name: sparta-rtl-generator
+    ports:
+      - "8021:8021"
+    volumes:
+      - ./services/rtl-generator:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8021 --reload
+
+  # Model Synthesis Service
+  model-synthesis:
+    build:
+      context: ./services/model-synthesis
+      dockerfile: Dockerfile
+    container_name: sparta-model-synthesis
+    ports:
+      - "8022:8022"
+    volumes:
+      - ./services/model-synthesis:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8022 --reload
+
+  # Compiler Service
+  compiler:
+    build:
+      context: ./services/compiler
+      dockerfile: Dockerfile
+    container_name: sparta-compiler
+    ports:
+      - "8023:8023"
+    volumes:
+      - ./services/compiler:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8023 --reload
+
+  # Simple Python Frontend
+  simple-frontend:
+    build:
+      context: ./simple-frontend
+      dockerfile: Dockerfile
+    container_name: sparta-simple-frontend
+    environment:
+      GATEWAY_URL: http://gateway:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      - gateway
+    volumes:
+      - ./simple-frontend:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 8080
+
+volumes:
+  postgres_data:

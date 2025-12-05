@@ -1,0 +1,34 @@
+# SPARTA Chat - Backend Dependencies (Python 3.13 compatible)
+fastapi>=0.100.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Async Database
+aiosqlite>=0.19.0
+
+# HTTP Client for Agent Communication
+httpx>=0.25.0
+
+# Visualization (pre-built wheels)
+matplotlib
+numpy
+plotly>=5.0.0
+kaleido
+
+# Frontend (Streamlit)
+streamlit
+
+# Code Highlighting
+pygments>=2.0.0
+
+# Graph/Diagram Generation
+graphviz
+networkx
+
+# PCB Design Libraries
+skidl>=1.2.0
+pcbflow
+
+# Utilities
+python-multipart
